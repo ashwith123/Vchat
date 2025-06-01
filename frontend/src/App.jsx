@@ -9,7 +9,6 @@ import { Toaster } from "react-hot-toast";
 import HomePage from "./pages/HomePage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
-import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 
 function App() {
@@ -29,7 +28,7 @@ function App() {
     );
   }
   return (
-    <>
+    <div data-theme="retro">
       <Toaster position="top-center" reverseOrder={TruckElectric} />
 
       <Navbar></Navbar>
@@ -47,16 +46,13 @@ function App() {
           path="/login"
           element={!authUser ? <LoginPage /> : <Navigate to="/" />}
         />
-        <Route
-          path="/settings"
-          element={authUser ? <SettingsPage /> : <Navigate to="/login" />}
-        />
+
         <Route
           path="/profile"
           element={authUser ? <ProfilePage /> : <Navigate to="/login" />}
         />
       </Routes>
-    </>
+    </div>
   );
 }
 

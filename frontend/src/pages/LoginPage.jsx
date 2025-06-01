@@ -28,8 +28,10 @@ const LoginPage = () => {
     }
   };
 
+  const theme = "synthwave";
+
   return (
-    <div>
+    <div data-theme={theme}>
       {/* Left Side - Form */}
       <div className="flex flex-col justify-center items-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-8">
@@ -43,7 +45,7 @@ const LoginPage = () => {
                 <MessageSquare className="w-6 h-6 text-primary" />
               </div>
               <h1 className="text-2xl font-bold mt-2">Welcome Back</h1>
-              <p className="text-base-content/60">Login in to your account</p>
+              <p className="text-base-content/60">Login to your account</p>
             </div>
           </div>
 
@@ -80,7 +82,7 @@ const LoginPage = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   className={`input input-bordered w-full pl-10`}
-                  placeholder="••••••••"
+                  placeholder="Enter Password"
                   value={formData.password}
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })

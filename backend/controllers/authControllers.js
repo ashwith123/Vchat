@@ -1,6 +1,7 @@
 let user = require("../models/user");
 let jwt = require("jsonwebtoken");
 const secret = "process.env.SECRET";
+let cloudinary = require("../lib/cloudinary.js");
 
 if (!secret) {
   throw new Error("JWT Secret not set in environment variables");
@@ -12,13 +13,17 @@ const login = async (req, res) => {
 
     let currUser = await user.findOne({ email });
     if (!currUser) {
-      res.send({ message: "user doesnt exist" });
+      return res.send({ message: "user doesnt exist" });
     } else {
       let isCorrectPass = await currUser.matchPassword(password);
       if (isCorrectPass) {
         let payload = {
+          // add all these so check auth can acces from token when refresh
           id: currUser._id,
           email: currUser.email,
+          username: currUser.username,
+          profilePic: currUser.profilePic,
+          createdAt: currUser.createdAt,
         };
 
         let token = jwt.sign(payload, secret, { expiresIn: "1h" });
@@ -28,6 +33,7 @@ const login = async (req, res) => {
           sameSite: "Strict",
           maxAge: 24 * 60 * 60 * 1000,
         });
+
         res.status(201).json({
           _id: currUser._id,
           username: currUser.username,
@@ -38,7 +44,6 @@ const login = async (req, res) => {
       } else {
         res.send({ message: "password is incorrect" });
       }
-      res.status(200).send({ message: "Login successful" });
     }
   } catch (e) {
     console.log(e);
@@ -47,7 +52,6 @@ const login = async (req, res) => {
 
 const signin = async (req, res) => {
   try {
-    console.log("this is request body", req.body);
     const { username, email, password } = req.body;
 
     if (!email || !password || !username) {
@@ -76,8 +80,11 @@ const signin = async (req, res) => {
     await newUser.save();
 
     let payload = {
-      username: newUser.username,
+      id: newUser._id,
       email: newUser.email,
+      username: newUser.username,
+      profilePic: newUser.profilePic,
+      createdAt: newUser.createdAt,
     };
 
     let token = jwt.sign(payload, secret, { expiresIn: "1h" });
@@ -117,31 +124,54 @@ const profile = async (req, res) => {
 const profileUpdate = async (req, res) => {
   try {
     let newimage = req.body.profilePic;
-    let currUser = req.user._id;
-
+    let currUser = req.user.id;
+    console.log("curruser id is", currUser);
+    const existingUser = await user.findById(currUser);
+    console.log("Existing user check while update:", existingUser);
     const uploadResponse = await cloudinary.uploader.upload(newimage);
-    const finalimage = await user
+    console.log(uploadResponse);
+    const updatedUser = await user
       .findByIdAndUpdate(
         currUser,
         {
-          profilePic: uploadResponse,
+          profilePic: uploadResponse.secure_url,
         },
         { new: true }
       )
       .select("-password");
-    res
-      .status(200)
-      .json({ message: "Profile updated successfully", finalimage });
+    console.log("updated user is ", updatedUser);
+
+    res.status(201).json({
+      _id: updatedUser._id,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      profilePic: updatedUser.profilePic,
+      createdAt: updatedUser.createdAt,
+    });
   } catch (e) {
-    res.send("error while uploading image error:" + e);
+    console.log("error while uplaoding ", e);
+    return res
+      .status(500)
+      .json({ message: "Failed to upload image", error: e.message });
   }
 };
 
 const checkAuth = (req, res) => {
   try {
-    res.status(200).json(req.user);
+    const currUser = req.user; //geting from middle ware
+    user
+      .findById(currUser.id)
+      .select("-password")
+      .then((fullUser) => {
+        if (!fullUser)
+          return res.status(404).json({ message: "User not found" });
+        conosole.log("backend checkauth sending this", fullUser);
+        res.status(200).json(fullUser);
+      })
+      .catch((err) => {
+        res.status(500).json({ message: "Server error" });
+      });
   } catch (error) {
-    console.log("Error in checkAuth controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

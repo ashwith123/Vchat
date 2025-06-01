@@ -38,7 +38,6 @@ const SignUpPage = () => {
     e.preventDefault();
 
     const res = validateForm();
-    console.log("this si response from validate form" + res);
 
     if (res === true) {
       signup(formData);
@@ -157,7 +156,7 @@ const SignUpPage = () => {
             <p className="text-base-content/60">
               Already have an account?{" "}
               <Link to="/login" className="link link-primary">
-                Sign in
+                Login
               </Link>
             </p>
           </div>
