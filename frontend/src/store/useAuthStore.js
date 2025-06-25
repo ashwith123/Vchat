@@ -8,6 +8,7 @@ export const useAuthStore = create((set, get) => ({
   isLoggingIn: false,
   isUpdatingProfile: false,
   isCheckingAuth: true,
+  profiles: null,
 
   checkAuth: async () => {
     try {
@@ -15,6 +16,9 @@ export const useAuthStore = create((set, get) => ({
       set({ authUser: res.data });
     } catch (err) {
       console.error("Error while checking user:", err);
+      const message =
+        err.response?.data?.message || "problem whhile checking autherization";
+      toast.error(message);
       set({ authUser: null });
     } finally {
       set({ isCheckingAuth: false });
@@ -77,6 +81,15 @@ export const useAuthStore = create((set, get) => ({
       toast.error(error.response.data.message);
     } finally {
       set({ isUpdatingProfile: false });
+    }
+  },
+
+  getprofile: async () => {
+    try {
+      const res = await axiosInstance.get("/msg/users");
+      set({ profiles: res.data });
+    } catch (err) {
+      consol.log(err);
     }
   },
 }));

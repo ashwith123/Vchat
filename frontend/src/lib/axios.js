@@ -8,24 +8,24 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    } else {
-      console.log("No token found in localStorage");
-    }
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
 export default axiosInstance;
+
+// axiosInstance.interceptors.request.use(
+//   (config) => {
+//     const token = localStorage.getItem("token");
+
+//     if (token) {
+//       config.headers["Authorization"] = `Bearer ${token}`;
+//     } else {
+//       console.log("No token found in localStorage");
+//     }
+
+//     return config;
+//   },
+//   (error) => {
+//     return Promise.reject(error);
+//   }
+// );
 
 // // instead of writing this in every page we create an instance
 

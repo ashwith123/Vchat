@@ -13,7 +13,9 @@ const login = async (req, res) => {
 
     let currUser = await user.findOne({ email });
     if (!currUser) {
-      return res.send({ message: "user doesnt exist" });
+      return res
+        .status(400)
+        .send({ message: "User not found try creating new account" });
     } else {
       let isCorrectPass = await currUser.matchPassword(password);
       if (isCorrectPass) {
@@ -47,6 +49,7 @@ const login = async (req, res) => {
     }
   } catch (e) {
     console.log(e);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -125,11 +128,8 @@ const profileUpdate = async (req, res) => {
   try {
     let newimage = req.body.profilePic;
     let currUser = req.user.id;
-    console.log("curruser id is", currUser);
     const existingUser = await user.findById(currUser);
-    console.log("Existing user check while update:", existingUser);
     const uploadResponse = await cloudinary.uploader.upload(newimage);
-    console.log(uploadResponse);
     const updatedUser = await user
       .findByIdAndUpdate(
         currUser,
@@ -139,7 +139,6 @@ const profileUpdate = async (req, res) => {
         { new: true }
       )
       .select("-password");
-    console.log("updated user is ", updatedUser);
 
     res.status(201).json({
       _id: updatedUser._id,
@@ -165,13 +164,14 @@ const checkAuth = (req, res) => {
       .then((fullUser) => {
         if (!fullUser)
           return res.status(404).json({ message: "User not found" });
-        conosole.log("backend checkauth sending this", fullUser);
         res.status(200).json(fullUser);
       })
       .catch((err) => {
+        console.log(err);
         res.status(500).json({ message: "Server error" });
       });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

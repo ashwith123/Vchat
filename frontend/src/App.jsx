@@ -39,12 +39,16 @@ function App() {
           element={authUser ? <HomePage /> : <Navigate to="/login" />}
         />
         <Route
+          path="/home"
+          element={authUser ? <HomePage /> : <Navigate to="/login" />}
+        />
+        <Route
           path="/signup"
           element={!authUser ? <SignUpPage /> : <Navigate to="/home" />}
         />
         <Route
           path="/login"
-          element={!authUser ? <LoginPage /> : <Navigate to="/" />}
+          element={!authUser ? <LoginPage /> : <Navigate to="/home" />}
         />
 
         <Route

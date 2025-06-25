@@ -14,12 +14,12 @@ const authenticateToken = (req, res, next) => {
         .status(401)
         .json({ message: "No token, authorization denied" });
     }
-
+    //this verify and all payload info to the user feild in call back fucntion
     jwt.verify(token, secret, (err, user) => {
       if (err) {
         return res.status(403).json({ message: "Invalid token" });
       }
-      req.user = user;
+      req.user = user; // adds user data to req of http
       next();
     });
   } catch (e) {

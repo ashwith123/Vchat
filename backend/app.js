@@ -29,6 +29,7 @@ mongoose
     console.error("MongoDB connection error:", error);
   });
 
+// Error-handling middleware
 app.use((err, req, res, next) => {
   if (err.type === "entity.too.large") {
     return res.status(413).json({
