@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import ChatStore from "../store/chatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import ChatHeader from "./ChatHeader";
@@ -7,14 +7,30 @@ import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { formatMessageTime } from "../lib/utils";
 
 const Chatcontainer = () => {
-  const { messages, selectedUser, getMessages, isMessagesLoading } =
-    ChatStore();
+  const {
+    messages,
+    selectedUser,
+    getMessages,
+    isMessagesLoading,
+    subscribeToMessage,
+    unsubscribeToMessage,
+  } = ChatStore();
+  const messageEndRef = useRef(null);
   const { authUser } = useAuthStore();
 
   useEffect(() => {
     getMessages(selectedUser._id);
-  }, [selectedUser._id, getMessages]);
 
+    subscribeToMessage();
+
+    return () => unsubscribeToMessage();
+  }, [selectedUser._id, getMessages, subscribeToMessage, unsubscribeToMessage]);
+
+  useEffect(() => {
+    if (messageEndRef.current && messages) {
+      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
   if (isMessagesLoading)
     return (
       <div className="flex-1 flex flex-col overflow-auto">
@@ -34,6 +50,7 @@ const Chatcontainer = () => {
               className={`chat ${
                 message.senderId === authUser._id ? "chat-end" : "chat-start"
               }`} //chat start and end are from daisy ui
+              ref={messageEndRef}
             >
               <div className="chat-image avatar">
                 <div className="size-10 rounded-full border">

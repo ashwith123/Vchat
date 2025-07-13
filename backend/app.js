@@ -7,6 +7,7 @@ const { io, app, server } = require("./lib/socket");
 const authRoute = require("../backend/routes/authRoute");
 const authMessage = require("../backend/routes/authMessage");
 const dotenv = require("dotenv");
+const connectDB = require("./lib/db");
 
 dotenv.config();
 app.use(cookieParser());
@@ -16,18 +17,6 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use("/api", authRoute);
 app.use("/api/msg", authMessage);
-
-mongoose
-  .connect("mongodb://localhost:27017/vchat", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("MongoDB connected!");
-  })
-  .catch((error) => {
-    console.error("MongoDB connection error:", error);
-  });
 
 // Error-handling middleware
 app.use((err, req, res, next) => {
@@ -48,4 +37,5 @@ app.use((err, req, res, next) => {
 
 server.listen(8080, (req, res) => {
   console.log("listening at port 8080");
+  connectDB();
 });
