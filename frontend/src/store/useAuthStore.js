@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import axiosInstance from "../lib/axios";
 import toast from "react-hot-toast";
+import io from "socket.io-client";
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
@@ -9,16 +10,25 @@ export const useAuthStore = create((set, get) => ({
   isUpdatingProfile: false,
   isCheckingAuth: true,
   profiles: null,
+  Onlineusers: [],
+  socket: null,
 
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/check");
       set({ authUser: res.data });
+      get().connectSocket();
     } catch (err) {
       console.error("Error while checking user:", err);
-      const message =
-        err.response?.data?.message || "problem whhile checking autherization";
-      toast.error(message);
+      const status = err.response?.status;
+
+      // Only toast if it’s truly an error, not just a not-logged-in user
+      if (status !== 401 && status !== 403) {
+        const message = err.response?.data?.message || "Authorization error";
+        toast.error(message);
+      } else {
+        console.warn("User not logged in or token invalid");
+      }
       set({ authUser: null });
     } finally {
       set({ isCheckingAuth: false });
@@ -33,6 +43,7 @@ export const useAuthStore = create((set, get) => ({
       const res = await axiosInstance.post("/signup", data);
       set({ authUser: res.data });
       toast.success("Account created successfully");
+      get().connectSocket();
     } catch (err) {
       const message = err.response?.data?.message || "Signup failed";
       toast.error(message);
@@ -46,6 +57,7 @@ export const useAuthStore = create((set, get) => ({
       await axiosInstance.post("/logout");
       set({ authUser: null });
       toast.success("logged out sucess fully");
+      get().connectDisconnect();
     } catch (error) {
       console.log(error);
       toast.error("error logging out");
@@ -58,6 +70,7 @@ export const useAuthStore = create((set, get) => ({
       const res = await axiosInstance.post("/login", data);
       set({ authUser: res.data });
       toast.success(" login  successfully");
+      get().connectSocket();
     } catch (err) {
       const message = err.response?.data?.message || "Signup failed";
       console.log(err);
@@ -91,5 +104,25 @@ export const useAuthStore = create((set, get) => ({
     } catch (err) {
       consol.log(err);
     }
+  },
+
+  connectSocket: () => {
+    const { authUser } = get();
+    if (!authUser || get().socket?.connected) {
+      reutrn;
+    }
+    const socket = io("http://localhost:8080", {
+      query: {
+        userId: authUser._id,
+      },
+    });
+    socket.connect();
+    set({ socket: socket });
+    socket.on("getOnlineUsers", (users) => {
+      set({ Onlineusers: users });
+    });
+  },
+  connectDisconnect: () => {
+    if (get().socket?.connected) get().socket.disconnect();
   },
 }));

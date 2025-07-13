@@ -12,8 +12,9 @@ import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 
 function App() {
-  let { checkAuth, isCheckingAuth, authUser } = useAuthStore();
+  let { checkAuth, isCheckingAuth, authUser, Onlineusers } = useAuthStore();
 
+  console.log(Onlineusers);
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);

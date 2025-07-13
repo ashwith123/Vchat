@@ -1,8 +1,8 @@
 const express = require("express");
-const app = express();
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const { io, app, server } = require("./lib/socket");
 
 const authRoute = require("../backend/routes/authRoute");
 const authMessage = require("../backend/routes/authMessage");
@@ -46,6 +46,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(8080, (req, res) => {
+server.listen(8080, (req, res) => {
   console.log("listening at port 8080");
 });

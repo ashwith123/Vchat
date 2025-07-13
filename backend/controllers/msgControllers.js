@@ -5,7 +5,6 @@ let cloudinary = require("../lib/cloudinary.js");
 const getUserSidebar = async (req, res) => {
   try {
     let loggedInUserId = req.user.id;
-    console.log("req.user =", JSON.stringify(req.user, null, 2));
 
     let filteredUsers = await user
       .find({ _id: { $ne: loggedInUserId } })
@@ -21,9 +20,6 @@ const getChat = async (req, res) => {
   try {
     let currUser = req.user.id;
     let SendToUserId = req.params.id;
-    console.log(
-      "current user is" + currUser + "is sending text to " + SendToUserId
-    );
 
     let chat = await message.find({
       $or: [
