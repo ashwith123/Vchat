@@ -4,6 +4,9 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { io, app, server } = require("./lib/socket");
 
+const path = require("path");
+const __dirname = path.resolve();
+
 const authRoute = require("../backend/routes/authRoute");
 const authMessage = require("../backend/routes/authMessage");
 const dotenv = require("dotenv");
@@ -15,8 +18,17 @@ app.use(cookieParser());
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
 app.use("/api", authRoute);
 app.use("/api/msg", authMessage);
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+  });
+}
 
 // Error-handling middleware
 app.use((err, req, res, next) => {
